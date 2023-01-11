@@ -3,7 +3,7 @@ import { TextEditor } from "./components/TextEditor";
 
 function App() {
   const url = "https://3428-158-101-122-240.ngrok.io/predict/fulltext/";
-  const local_url = "http://127.0.0.1:8000/predict/fulltext/";
+  // const local_url = "http://127.0.0.1:8000/predict/fulltext/";
   const [data, setData] = useState(null);
   const text =
     "the Court's question regarding the relevant statutory mandatory minimum in";
