@@ -8,7 +8,7 @@ function App() {
     "the Court's question regarding the relevant statutory mandatory minimum in";
   async function fetchData() {
     console.log("fetching now");
-    const response = await fetch("url", {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("url");
+      const response = await fetch(url);
       const json = await response.json();
       setData(json);
     }
