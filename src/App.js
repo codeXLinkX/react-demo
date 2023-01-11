@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { TextEditor } from "./components/TextEditor";
 
 function App() {
+  const url = "https://3428-158-101-122-240.ngrok.io/";
   const [data, setData] = useState(null);
   const text =
     "the Court's question regarding the relevant statutory mandatory minimum in";
   async function fetchData() {
     console.log("fetching now");
-    const response = await fetch("http://0.0.0.0:8000/predict/fulltext/", {
+    const response = await fetch("url", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -15,7 +17,6 @@ function App() {
         fulltext: text,
       }),
     });
-    // const response = await fetch("http://0.0.0.0:8000/predict/fulltext/");
     const json = await response.json();
     console.log(json);
     setData(json);
@@ -23,7 +24,7 @@ function App() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch("http://0.0.0.0:8000/predict/fulltext/");
+      const response = await fetch("url");
       const json = await response.json();
       setData(json);
     }
@@ -33,6 +34,7 @@ function App() {
   return (
     <div>
       <h1>Text</h1>
+      <TextEditor />
       <p>{text}</p>
       <button onClick={fetchData}>Get citations</button>
       {data ? (
