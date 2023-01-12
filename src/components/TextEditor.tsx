@@ -5,8 +5,8 @@ import "react-quill/dist/quill.snow.css";
 
 export const TextEditor = () => {
   const [text, setText] = useState("");
-  const [serverData, setServerText] = useState(null);
-  const [justCalledAPI, setJustCalledAPI] = useState(false);
+  const lastSuggestion = useRef("");
+  const prevNUmberOfWords = useRef(0);
 
   // create a ref for the quill text editor:
   const quillRef = useRef<any>();
@@ -28,48 +28,30 @@ export const TextEditor = () => {
     }
   }, [quillRef]); // only run once on initial mount
 
-  const handleKeyDown = (event: any) => {
-    if (event.key === "Tab") {
-      console.log("tab pressed");
-      event.preventDefault();
-      // if Tab was pressed, don't change the text.
-      // Bring the caret to the end of the line:
-      const quill = quillRef?.current?.getEditor();
-      quill.setSelection(quill.getLength() - 1, 0, "silent");
-    }
-  };
-
-  const handleKeyPress = (event: any) => {
-    console.log("handleKeyPress pressed", event.key);
-    if (event.key === "Tab") {
-      console.log("handleKeyPress tab pressed");
-      event.preventDefault();
-    }
-  };
-
-  const handleChange = async (value: string, delta: any, source: string) => {
-    console.log("source", source);
-    if (source === "api") {
-      return;
-    }
-    console.log("WE ARE IN HANDLE ON CHANGE");
-    let val = value.replace("<p>", "").replace("</p>", "");
-    console.log("val", val);
-    setText(value);
-    const response = await fetch("http://0.0.0.0:8000/predict/fulltext/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fulltext: val,
-      }),
-    });
+  const getSuggestions = async (textContent: string, quill: any) => {
+    const response = await fetch(
+      "https://3428-158-101-122-240.ngrok.io/predict/fulltext/",
+      {
+        // https://3428-158-101-122-240.ngrok.io/predict/fulltext/ http://0.0.0.0:8000/predict/fulltext/
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fulltext: textContent,
+        }),
+      }
+    );
     const data = await response.json();
     console.log("data", data);
-    // setServerText(data);
-    if (data && data["citations"] && quillRef.current) {
-      const quill = quillRef?.current?.getEditor();
+    if (
+      data &&
+      data["citations"] &&
+      data["citations"].length > 0 &&
+      quillRef.current
+    ) {
+      lastSuggestion.current = data?.citations[0];
+
       const caret = quill.getSelection();
       if (!caret) return;
       const index = caret["index"];
@@ -79,78 +61,79 @@ export const TextEditor = () => {
           retain: index,
         },
         {
-          // retain: index,
-          insert: " " + data["citations"][0],
+          insert: data["citations"][0],
           attributes: { color: "grey", link: data["hyperlinks"][0] },
-          // index: index,
         },
       ]);
-      console.log("updated content", index);
-      // quill.updateContents(
-      //   new Delta()
-      //     .retain(6) // Keep 'Hello '
-      //     .delete(5) // 'World' is deleted
-      //     .insert("Quill")
-      //     .retain(1, { bold: true }) // Apply bold to exclamation mark
-      // );
-      // quill.updateContents();
-      // quill.insertText(
-      //   index,
-      //   " " + data["citations"][0],
-      //   {
-      //     color: "grey",
-      //     italic: true,
-      //   },
-      //   "api"
-      // );
     }
-    // setJustCalledAPI(true);
+    console.log("lastSuggestion", lastSuggestion);
   };
 
-  // append the server data text to the quill text editor but with grey color:
-  // const greyText = (text) => {
-  //   return (
-  //     <span style={{ color: "grey" }}>
-  //       {text}
-  //     </span>
-  //   );
-  // }
+  const handleChange = async (value: string, delta: any, source: string) => {
+    console.log("WE ARE IN HANDLE ON CHANGE");
+    console.log("lastSuggestion", lastSuggestion.current);
 
-  // const finalText = (
-  //   <p>
-  //     {text}
-  //     <span style={{ color: "grey" }}>{serverData ? ["citations"] : ""}</span>
-  //   </p>
-  // );
+    if (source === "api") {
+      console.log("source is api -- RETURNING");
+      return;
+    }
+    // if the source is user and the last key pressed is not tab, that means user didn't accept the last suggestion.
+    // in that case, remove the last suggestion from the editor:
+    const quill = quillRef?.current?.getEditor();
+    if (source === "user" && lastSuggestion.current != "") {
+      console.log("DELETING LAST SUGGESTION");
+      const lastSuggestionLength = lastSuggestion.current.length;
+      lastSuggestion.current = "";
+      quill.deleteText(
+        quill.getLength() - (lastSuggestionLength + 1),
+        lastSuggestionLength,
+        "api"
+      );
+      return;
+    }
 
-  // return the quill text editor and the server data text:
-  // return (
-  //   <div>
-  //     <ReactQuill value={text} onChange={handleChange} />
+    console.log("source", source);
 
-  const bindings = {
-    // This will overwrite the default binding also named 'tab'
-    tab: {
-      key: 9,
-      handler: function () {
-        console.log("tab pressed bindings");
-        return false;
-      },
-    },
-  };
-  const mods = {
-    keyboard: {
-      bindings: bindings,
-    },
+    const textContent = quill?.root?.textContent;
+    console.log("number of words", textContent.split(" ").length, textContent);
+
+    setText(value);
+    // if we already have a suggestion waiting to be approved or discarded, don't send another request:
+    if (lastSuggestion.current != "") {
+      return;
+    }
+    // if the last character of the textContent is not space, return:
+    if (textContent[textContent.length - 1] !== " ") {
+      return;
+    }
+
+    await getSuggestions(textContent, quill);
   };
   return (
     <div
       onKeyDownCapture={(ev) => {
         if (ev.key === "Tab") {
+          console.log("tab was hit", lastSuggestion.current);
           ev.preventDefault();
           ev.stopPropagation();
           const quill = quillRef?.current?.getEditor();
-          quill.setSelection(quill.getLength() - 1, 0, "silent");
+          if (
+            lastSuggestion.current != "" &&
+            lastSuggestion.current != undefined
+          ) {
+            console.log("lastSuggestion", lastSuggestion.current);
+            // turn the pending suggestion word color from grey to black:
+            quill.formatText(
+              quill.getLength() - (lastSuggestion.current.length + 1),
+              lastSuggestion.current.length,
+              { color: "black" },
+              "api"
+            );
+            lastSuggestion.current = "";
+            const textContent = quill?.root?.textContent;
+            prevNUmberOfWords.current = textContent.split(" ").length;
+          }
+          quill.setSelection(quill.getLength() - 1, 0, "api");
         }
       }}
     >
@@ -158,13 +141,10 @@ export const TextEditor = () => {
         ref={quillRef}
         value={text}
         onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onKeyPress={handleKeyPress}
+        // onKeyDown={handleKeyDown}
+        // onKeyPress={handleKeyPress}
         placeholder="Compose a case..."
-        // modules={mods}
       />
-      {/* <div>Citations: {serverData ? ["citations"] : ""}</div>
-      <div>Hyperlinks: {serverData ? ["hyperlinks"] : ""}</div> */}
     </div>
   );
 };
