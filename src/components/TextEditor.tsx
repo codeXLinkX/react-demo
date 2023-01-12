@@ -70,8 +70,7 @@ export const TextEditor = () => {
           attributes: {
             color: "grey",
             link: data?.hyperlinks[0],
-            // add underscore
-            // underline: true,
+            underline: true,
           },
         },
       ]);
@@ -139,6 +138,14 @@ export const TextEditor = () => {
               { color: lastSuggestionHasALInk.current ? "blue" : "black" },
               "api"
             );
+            quill.updateContents([
+              {
+                retain: quill.getLength() - 1,
+              },
+              {
+                insert: " ",
+              },
+            ]);
             previousAcceptedSuggestion.current = lastSuggestion.current;
             lastSuggestion.current = "";
             lastSuggestionHasALInk.current = false;
