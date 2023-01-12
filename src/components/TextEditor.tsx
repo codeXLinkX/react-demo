@@ -6,6 +6,8 @@ import "react-quill/dist/quill.snow.css";
 export const TextEditor = () => {
   const [text, setText] = useState("");
   const lastSuggestion = useRef("");
+  const previousAcceptedSuggestion = useRef("");
+  const lastSuggestionHasALInk = useRef(false);
   const prevNUmberOfWords = useRef(0);
 
   // create a ref for the quill text editor:
@@ -50,8 +52,11 @@ export const TextEditor = () => {
       data["citations"].length > 0 &&
       quillRef.current
     ) {
-      lastSuggestion.current = data?.citations[0];
-
+      const firstCitation = data?.citations[0];
+      if (firstCitation === previousAcceptedSuggestion.current) return;
+      lastSuggestion.current = firstCitation;
+      lastSuggestionHasALInk.current =
+        data?.hyperlinks && data?.hyperlinks.length > 0;
       const caret = quill.getSelection();
       if (!caret) return;
       const index = caret["index"];
@@ -61,8 +66,8 @@ export const TextEditor = () => {
           retain: index,
         },
         {
-          insert: data["citations"][0],
-          attributes: { color: "grey", link: data["hyperlinks"][0] },
+          insert: firstCitation,
+          attributes: { color: "grey", link: data?.hyperlinks[0] },
         },
       ]);
     }
@@ -126,10 +131,12 @@ export const TextEditor = () => {
             quill.formatText(
               quill.getLength() - (lastSuggestion.current.length + 1),
               lastSuggestion.current.length,
-              { color: "black" },
+              { color: lastSuggestionHasALInk.current ? "blue" : "black" },
               "api"
             );
+            previousAcceptedSuggestion.current = lastSuggestion.current;
             lastSuggestion.current = "";
+            lastSuggestionHasALInk.current = false;
             const textContent = quill?.root?.textContent;
             prevNUmberOfWords.current = textContent.split(" ").length;
           }
