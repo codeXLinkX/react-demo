@@ -56,7 +56,7 @@ export const TextEditor = () => {
       if (firstCitation === previousAcceptedSuggestion.current) return;
       lastSuggestion.current = firstCitation;
       lastSuggestionHasALInk.current =
-        data?.hyperlinks && data?.hyperlinks.length > 0;
+        data?.hyperlinks && data?.hyperlinks.length > 0 && data?.hyperlinks[0];
       const caret = quill.getSelection();
       if (!caret) return;
       const index = caret["index"];
@@ -67,7 +67,12 @@ export const TextEditor = () => {
         },
         {
           insert: firstCitation,
-          attributes: { color: "grey", link: data?.hyperlinks[0] },
+          attributes: {
+            color: "grey",
+            link: data?.hyperlinks[0],
+            // add underscore
+            // underline: true,
+          },
         },
       ]);
     }
