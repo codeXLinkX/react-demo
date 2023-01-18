@@ -9,6 +9,8 @@ export const TextEditor = () => {
   const previousAcceptedSuggestion = useRef("");
   const lastSuggestionHasALInk = useRef(false);
   const prevNUmberOfWords = useRef(0);
+  const tooltipText = useRef("yoyoyoy");
+  const [showTooltip, setShowTooltip] = useState(true);
 
   // create a ref for the quill text editor:
   const quillRef = useRef<any>();
@@ -164,6 +166,14 @@ export const TextEditor = () => {
         // onKeyPress={handleKeyPress}
         placeholder="Compose a case..."
       />
+      {showTooltip && (
+        <div
+          className="tooltip"
+          // style={{ top: tooltipPosition.top, left: tooltipPosition.left }}
+        >
+          {tooltipText.current}
+        </div>
+      )}
     </div>
   );
 };

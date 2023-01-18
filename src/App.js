@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { TextEditor } from "./components/TextEditor";
+import { TextEditor3 } from "./components/TextEditor3";
 
 function App() {
   // const url = "https://3428-158-101-122-240.ngrok.io/predict/fulltext/";
@@ -34,8 +35,8 @@ function App() {
 
   return (
     <div style={{ margin: 40 }}>
-      <h1>Midpage.ai</h1>
-      <TextEditor />
+      {/* <h1>Midpage.ai</h1> */}
+      <TextEditor3 />
       {/* {data ? (
         <div>
           <p>Citations: {data["citations"]}</p>
