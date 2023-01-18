@@ -71,16 +71,19 @@ export const TextEditor3 = () => {
   }, [data]);
 
   const getSuggestions = async (textContent: string) => {
-    const response = await fetch("http://0.0.0.0:8000/predict/fulltext/", {
-      // https://3428-158-101-122-240.ngrok.io/predict/fulltext/ http://0.0.0.0:8000/predict/fulltext/
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fulltext: textContent,
-      }),
-    });
+    const response = await fetch(
+      "https://3428-158-101-122-240.ngrok.io/predict/fulltext/",
+      {
+        // https://3428-158-101-122-240.ngrok.io/predict/fulltext/ http://0.0.0.0:8000/predict/fulltext/
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fulltext: textContent,
+        }),
+      }
+    );
     const responseData = await response.json();
     console.log("responseData", responseData);
     responseData["hyperlinks"] = [
