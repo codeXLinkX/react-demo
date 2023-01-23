@@ -72,7 +72,7 @@ export const TextEditor3 = () => {
 
   const getSuggestions = async (textContent: string) => {
     const response = await fetch(
-      "https://3428-158-101-122-240.ngrok.io/predict/fulltext/",
+      "https://2b6d-152-70-125-142.ngrok.io/predict/fulltext/",
       {
         // https://3428-158-101-122-240.ngrok.io/predict/fulltext/ http://0.0.0.0:8000/predict/fulltext/
         method: "POST",
