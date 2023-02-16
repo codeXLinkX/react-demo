@@ -10,27 +10,30 @@ export const insertCitations = (data: any, quill: any): any[] => {
   const citations = data["citations"];
   const segments = data["fragments"] || data["segments"];
   const hyperlinks = data["hyperlinks"];
-  const lengthOfSegments = segments.length;
-  const lengthOfCitations = citations.length;
+  const lengthOfSegments = segments?.length;
+  const lengthOfCitations = citations?.length;
   const listOfRanges: any = {};
-  if (lengthOfSegments < lengthOfCitations) {
-    console.log("error");
-    return [];
-  }
+  // if (lengthOfSegments < lengthOfCitations) {
+  //   console.log("error");
+  //   return [];
+  // }
   quill.setContents([{ insert: "\n" }]);
   let index = 0;
   for (let i = 0; i < lengthOfSegments; i++) {
     const segment = segments[i];
-    const lengthOfSegment = segment.length;
-    quill.insertText(index, segment, wordWithoutLink);
-    index += lengthOfSegment;
-    if (i < lengthOfCitations) {
-      const citation = citations[i];
-      // const citationWithUnderScore = citation
-      //   .replaceAll(".", "")
-      //   .replaceAll(/\s/g, "_");
+    if (segment["name"] == "Text") {
+      const text = segment["text"];
+      quill.insertText(index, text, wordWithoutLink);
+      index += text.length;
+    }
+    // const lengthOfSegment = segment.length;
+    // quill.insertText(index, segment, wordWithoutLink);
+    // index += lengthOfSegment;
+    else if (segment["name"] == "Citation Suggestion") {
+      const citation = segment["info"]["text"];
+      const hyperlink = segment["info"]["hyperlink"];
 
-      const lengthOfCitation = citation.length;
+      const lengthOfCitation = citation?.length;
       quill.insertText(index, " ", wordWithoutLink);
       index += 1;
 
@@ -43,7 +46,7 @@ export const insertCitations = (data: any, quill: any): any[] => {
         const left = Math.max(0, bounds?.left + bounds?.width / 2 - 40);
         listOfRanges[citation] = {
           text: citation,
-          hyperlink: hyperlinks[i],
+          hyperlink: hyperlink,
           top: top,
           left: left,
           index: index,
@@ -51,7 +54,7 @@ export const insertCitations = (data: any, quill: any): any[] => {
         };
       }
       quill.insertText(index, citation, {
-        link: hyperlinks[i],
+        link: hyperlink,
         color: "grey",
         underline: true,
       });

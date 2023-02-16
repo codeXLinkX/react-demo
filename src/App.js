@@ -1,48 +1,44 @@
-import React, { useState, useEffect } from "react";
-import { TextEditor } from "./components/TextEditor";
+import React from "react";
 import { TextEditor3 } from "./components/TextEditor3";
+import logo from "./images/logo-midpage.png";
 
 function App() {
-  // const url = "https://3428-158-101-122-240.ngrok.io/predict/fulltext/";
-  const local_url = "http://127.0.0.1:8000/predict/fulltext/";
-  const [data, setData] = useState(null);
-  const text =
-    "the Court's question regarding the relevant statutory mandatory minimum in";
-  async function fetchData() {
-    console.log("fetching now");
-    const response = await fetch(local_url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fulltext: text,
-      }),
-    });
-    const json = await response.json();
-    console.log(json);
-    setData(json);
-  }
-
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const response = await fetch(local_url);
-  //     const json = await response.json();
-  //     setData(json);
-  //   }
-  //   fetchData();
-  // }, []);
-
+  const password = "tothemoon";
+  const [passwordEntered, setPasswordEntered] = React.useState(false);
   return (
-    <div style={{ margin: 40 }}>
-      {/* <h1>Midpage.ai</h1> */}
-      <TextEditor3 />
-      {/* {data ? (
-        <div>
-          <p>Citations: {data["citations"]}</p>
-          <p>Hyperlinks: {data["hyperlinks"]}</p>
+    <div>
+      <img src={logo} height={100} width={300} style={{ marginLeft: 15 }} />
+      {passwordEntered ? (
+        <div style={{ marginLeft: 40, alignContent: "center" }}>
+          <TextEditor3 />
         </div>
-      ) : null} */}
+      ) : (
+        <div
+          style={{
+            alignContent: "center",
+            alignItems: "center",
+            width: "100%",
+            alignSelf: "center",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <h1 style={{ maxWidth: "fit-content" }}>Enter Password</h1>
+          <input
+            style={{ padding: 10, width: 200, borderRadius: 5 }}
+            type="password"
+            hidden={false}
+            placeholder="where?"
+            onChange={(e) => {
+              if (e.target.value === password) {
+                setPasswordEntered(true);
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

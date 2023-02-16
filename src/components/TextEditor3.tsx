@@ -10,16 +10,13 @@ import {
 import "./tooltip.css";
 import { FaCheck, FaTimes } from "react-icons/fa";
 
-// create a data structure that will hold the citation data:
-// citations, hyperlinks, fragments:
+const local_url = "http://127.0.0.1:8000/predict/fulltext/";
+const ngrok_url = "https://82a3-192-9-238-195.ngrok.io/predict/fulltext/";
+
 class Citations {
-  citations: string[];
-  hyperlinks: string[];
-  fragments: string[];
-  constructor(citations: string[], hyperlinks: string[], fragments: string[]) {
-    this.citations = citations;
-    this.hyperlinks = hyperlinks;
-    this.fragments = fragments;
+  segments: any;
+  constructor(segments: any) {
+    this.segments = segments;
   }
 }
 
@@ -52,38 +49,28 @@ export const TextEditor3 = () => {
     // const citations = new Citations(data?.citations, data?.hyperlinks, data?.fragments);
     if (
       data &&
-      data["citations"] &&
-      data["citations"]?.length > 0 &&
+      data["segments"] &&
+      data["segments"]?.length > 0 &&
       quillRef.current
     ) {
       const listOfRanges = insertCitations(data, quill);
       console.log("listOfRanges", listOfRanges);
       citationList.current = listOfRanges;
       setText(quill.getText());
-      setCitations(
-        new Citations(
-          data?.citations,
-          data?.hyperlinks || ["https://www.google.com"],
-          data?.fragments
-        )
-      );
+      setCitations(new Citations(data?.segments));
     }
   }, [data]);
 
   const getSuggestions = async (textContent: string) => {
-    const response = await fetch(
-      "https://2b6d-152-70-125-142.ngrok.io/predict/fulltext/",
-      {
-        // https://3428-158-101-122-240.ngrok.io/predict/fulltext/ http://0.0.0.0:8000/predict/fulltext/
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fulltext: textContent,
-        }),
-      }
-    );
+    const response = await fetch(ngrok_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fulltext: textContent,
+      }),
+    });
     const responseData = await response.json();
     console.log("responseData", responseData);
     responseData["hyperlinks"] = [
@@ -172,7 +159,7 @@ export const TextEditor3 = () => {
       return;
     }
 
-    console.log("getSuggestions");
+    console.log("setData responseData");
 
     setData(responseData);
   };
@@ -235,6 +222,7 @@ export const TextEditor3 = () => {
           justifyContent: "space-between",
         }}
       >
+        <div style={{ width: "20%" }} />
         <ReactQuill
           style={{ width: "60%" }}
           ref={quillRef}
@@ -243,14 +231,14 @@ export const TextEditor3 = () => {
           onChange={handleChange}
           placeholder="Compose a case..."
         />
-        <div style={{ width: "40%", marginLeft: "10px" }}>
-          {citations?.citations
+        <div style={{ width: "20%" }}>
+          {citations?.segments
             ?.filter(
-              (citation) =>
+              (citation: any) =>
                 acceptedCitations?.indexOf(citation) == -1 &&
                 deletedCitations?.indexOf(citation) == -1
             )
-            ?.map((citation, index) => {
+            ?.map((citation: any, index: number) => {
               // display the citation with the corresponding hyperlink, and with 2 buttons: accept and discard. the buttons will be displayed on the right side of the citation.
               // buttons should have the corresponding icons (check and x):
               return (
@@ -296,7 +284,7 @@ export const TextEditor3 = () => {
                       justifyContent: "space-between",
                     }}
                   >
-                    <div>{citation}</div>
+                    <div>{citation["text"]}</div>
 
                     <div>
                       <button
@@ -371,7 +359,7 @@ export const TextEditor3 = () => {
                       </button>
                     </div>
                   </div>
-                  <div>{citations?.hyperlinks[index]}</div>
+                  <div>"www.amazon.com"</div>
                 </div>
               );
             })}
